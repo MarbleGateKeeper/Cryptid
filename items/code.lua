@@ -4335,7 +4335,10 @@ local alttab = {
 	loc_vars = function(self, info_queue, card)
 		local ret = localize("k_none")
 		if Cryptid.safe_get(G.GAME, "blind", "in_blind") then
-			if G.GAME.blind:get_type() == "Small" then
+			local tag = Cryptid.get_next_tag()
+			if tag then
+				ret = localize({ type = "name_text", key = tag, set = "Tag" })
+			elseif G.GAME.blind:get_type() == "Small" then
 				ret = localize({ type = "name_text", key = G.GAME.round_resets.blind_tags.Small, set = "Tag" })
 			elseif G.GAME.blind:get_type() == "Big" then
 				ret = localize({ type = "name_text", key = G.GAME.round_resets.blind_tags.Big, set = "Tag" })
@@ -4343,16 +4346,15 @@ local alttab = {
 				ret = "???"
 			end
 		end
-		local tag = Cryptid.get_next_tag()
-		if tag then
-			ret = localize({ type = "name_text", key = tag, set = "Tag" })
-		end
 		return { vars = { ret } }
 	end,
 	can_use = function(self, card)
 		return Cryptid.safe_get(G.GAME, "blind", "in_blind")
 	end,
 	use = function(self, card, area, copier)
+		if not Cryptid.safe_get(G.GAME, "blind", "in_blind") then
+			return
+		end
 		local used_consumable = copier or card
 		delay(0.4)
 		G.E_MANAGER:add_event(Event({
@@ -4363,7 +4365,7 @@ local alttab = {
 				local tag = nil
 				local type = G.GAME.blind:get_type()
 				local tag_key = Cryptid.get_next_tag()
-				if tag_Key then
+				if tag_key then
 					tag = Tag(tag_key)
 				elseif type == "Boss" then
 					tag = Tag(get_next_tag_key())
